@@ -42,7 +42,7 @@ def generate_unit_fraction_question(level):
     scaffold_steps = [
         {
             "prompt": f"Divide {amount} by {denominator}?",
-            "answer": round(amount / {denominator},2) 
+            "answer": round(amount / denominator,2) 
         }
     ]
 
