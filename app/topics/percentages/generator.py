@@ -2,9 +2,9 @@ import random
 
 from core.models.question_model import Question
 
+
 def generate_percentage_question(level):
 
-    # Define unique examples tailored to the exact formatting of each level
     examples_map = {
         1: [
             "Example for Level 1 (Find 1% of a round number):",
@@ -42,68 +42,62 @@ def generate_percentage_question(level):
     }
 
     if level == 1:
-
         percentage = 1
         amount = random.choice(range(100, 901, 10))
 
     elif level == 2:
-
         percentage = random.randint(1, 99)
         amount = random.choice(range(100, 901, 10))
 
     elif level == 3:
-
         percentage = 1
         amount = random.randint(0, 100)
 
     elif level == 4:
-
         percentage = random.randint(1, 99)
         amount = random.randint(0, 100)
 
     else:
-
-        percentage = random.choice(
-            [x * 0.5 for x in range(1, 201)]
-        )
-
+        percentage = random.choice([x * 0.5 for x in range(1, 201)])
         amount = random.randint(0, 1000)
 
-    answer = round(
-        (amount * percentage) / 100,
-        2
-    )
+    answer = round((amount * percentage) / 100, 2)
 
+    # ✔ FIXED scaffold (proper indentation)
     if level == 1:
-
         scaffold_steps = [
-            "What is 1% of the amount? (divide amount by 100)"
+            {
+                "prompt": f"What is 1% of {amount}? (divide {amount} by 100)",
+                "answer": round(amount / 100,2)
+            }
         ]
 
     else:
-
         scaffold_steps = [
-            f"What is 1% of the {amount}? (divide {amount} by 100)",
-            f"What is {percentage} lots of 1%?"
+            {
+                "prompt": f"What is 1% of {amount}? (divide {amount} by 100)",
+                "answer": round(amount / 100,2)
+            },
+            {
+                "prompt": f"What is {percentage} × 1% of {amount}?",
+                "answer": answer
+            }
         ]
 
-    # Fetch the specific level examples, fallback to level 2 if missing
     level_examples = examples_map.get(level, examples_map[2])
 
     return Question(
-        question_text=(
-            f"What is {percentage}% of {amount}?"
-        ),
-        correct_answer=str(answer),
+        question_text=f"What is {percentage}% of {amount}?",
+        correct_answer= answer,
         topic="percentages",
         level=level,
         scaffold_steps=scaffold_steps,
         worked_solution=[
-            f"1% of {amount} = {amount / 100}",
+            f"1% of {amount} = {(amount / 100):g}",
             f"Multiply by {percentage}",
-            f"Answer = {answer}"
+            f"Answer = {answer:g}"
         ],
-        examples=level_examples,  # Uses the level-specific list here
+        examples=level_examples,
         videos=[
             {
                 "title": "Percentages Tutorial",
@@ -111,4 +105,3 @@ def generate_percentage_question(level):
             }
         ]
     )
-

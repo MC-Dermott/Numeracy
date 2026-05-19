@@ -34,12 +34,53 @@ topic = st.selectbox(
     list(TOPIC_REGISTRY.keys())
 )
 
-level = st.slider(
-    "Choose Level",
-    1,
-    5,
-    1
-)
+selected_topic = TOPIC_REGISTRY[topic]
+levels = selected_topic["levels"]
+
+# Reset level when changing topic
+if "last_topic" not in st.session_state:
+    st.session_state.last_topic = topic
+
+if st.session_state.last_topic != topic:
+    st.session_state.selected_level = levels[0]["id"]
+    st.session_state.last_topic = topic
+
+# Initialise selected level
+if "selected_level" not in st.session_state:
+    st.session_state.selected_level = levels[0]["id"]
+
+st.write("### Choose Level")
+
+cols = st.columns(2)
+
+for index, level_data in enumerate(levels):
+
+    lvl_id = level_data["id"]
+
+    button_text = (
+        f"{level_data['label']}\n\n"
+        f"{level_data['description']}"
+    )
+
+    button_type = (
+        "primary"
+        if st.session_state.selected_level == lvl_id
+        else "secondary"
+    )
+
+    with cols[index % 2]:
+
+        if st.button(
+            button_text,
+            key=f"btn_lvl_{topic}_{lvl_id}",
+            type=button_type,
+            use_container_width=True
+        ):
+            st.session_state.selected_level = lvl_id
+            st.rerun()
+
+level = st.session_state.selected_level
+
 
 if st.button("Generate Question"):
     quiz["topic"] = topic
@@ -96,7 +137,7 @@ if question:
             st.subheader("🎥 Video Tutorial")
             render_videos(question)
             
-            st.subheader("🪜 Step-by-Step Hints")
+            st.subheader("Scaffold")
             render_scaffold(question)
             
             st.write("---")

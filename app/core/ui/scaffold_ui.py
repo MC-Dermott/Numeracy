@@ -1,24 +1,50 @@
-
 import streamlit as st
 
-def render_scaffold(question):
 
-    responses = []
+def is_correct_answer(user_input, correct_answer):
+    try:
+        return round(float(user_input), 4) == round(float(correct_answer), 4)
 
-    if not question.scaffold_steps:
-        return responses
+    except ValueError:
+        return (
+            str(user_input).strip().lower()
+            ==
+            str(correct_answer).strip().lower()
+        )
 
-    with st.expander("🧩 Scaffold Support"):
+def render_scaffold(question, suffix=""):
+    user_answers = []
 
-        for idx, step in enumerate(question.scaffold_steps):
+    # ✔ EXPANDER WRAPS ENTIRE SCAFFOLD
+    with st.expander("🪜 Step-by-step scaffold", expanded=False):
 
-            st.markdown(f"### Step {idx + 1}")
+        for i, step in enumerate(question.scaffold_steps):
 
-            response = st.text_input(
-                step,
-                key=f"scaffold_{idx}"
+            key = f"scaffold_{suffix}_{i}"
+
+            # Prompt
+            st.write(step["prompt"])
+
+            # Input
+            user_input = st.text_input(
+                "Your answer",
+                key=key
             )
 
-            responses.append(response)
+            correct_answer = step["answer"]
 
-    return responses
+            # Save state
+            user_answers.append(user_input)
+
+            # Validation
+            if user_input.strip() != "":
+                if is_correct_answer(user_input, correct_answer):
+                    st.success("✅ Correct")
+                else:
+                    st.error("❌ Try again")
+
+            st.write("")  # spacing
+
+    st.session_state.scaffold_answer = user_answers
+
+    return user_answers

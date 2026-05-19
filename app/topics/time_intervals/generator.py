@@ -3,123 +3,279 @@ from datetime import datetime, timedelta
 
 from core.models.question_model import Question
 
+
 def generate_time_interval_question(level):
 
+    # --------------------------------------------------
+    # Difficulty settings
+    # --------------------------------------------------
+
     step_map = {
-        1: 60,
-        2: 30,
-        3: 15,
-        4: 10,
-        5: 5
+        1: 60,  # on the hour
+        2: 5,   # finish not on hour
+        3: 5,   # start not on hour
+        4: 5    # neither on hour
     }
 
-    # Define unique examples for each difficulty level
+    # --------------------------------------------------
+    # Examples
+    # --------------------------------------------------
+
     examples_map = {
         1: [
-            "Calculate the time interval between 10:00 to 14:00",
+            "Calculate the time interval between 10:00 and 14:00",
             "10:00 -> 14:00 = 4 hours",
-            "Interval = 4 hours 0 mins"
+            "Interval = 4 hours"
         ],
+
         2: [
-            "Calculate the time interval between 10:30 to 13:00",
-            "10:30 -> 11:00 = 30 mins",
-            "11:00 -> 13:00 = 2 hours",
-            "Interval = 2 hours 30 mins"
+            "Calculate the time interval between 10:00 and 13:25",
+            "10:00 -> 13:00 = 3 hours",
+            "13:00 -> 13:25 = 25 mins",
+            "Interval = 3 hours 25 mins"
         ],
+
         3: [
-            "Calculate the time interval between 10:30 to 15:15",
-            "10:30 -> 11:00 = 30 mins",
-            "11:00 -> 15:00 = 4 hours",
-            "15:00 -> 15:15 = 15 minutes",
-            "Interval = 15 mins + 30 mins + 4 hours",
-            "Interval = 4 hours 45 mins"
+            "Calculate the time interval between 10:35 and 14:00",
+            "10:35 -> 11:00 = 25 mins",
+            "11:00 -> 14:00 = 3 hours",
+            "Interval = 3 hours 25 mins"
         ],
+
         4: [
-            "Calculate the time interval between 08:10 to 10:40",
-            "08:10 -> 09:00 = 50 mins",
-            "09:00 -> 10:00 = 1 hour",
-            "10:00 -> 10:40 = 40 mins",
-            "Interval = 50 mins + 40 mins + 1 hour",
-            "40 mins + 30 mins = 70 mins = 1 hour 10 mins",
-            "Interval = 2 hours 30 mins "
-        ],
-        5: [
-            "Calculate the time interval between 09:05 to 11:25",
-            "09:05 -> 10:00 = 55 mins",
-            "10:00 -> 11:00 = 1 hour",
-            "11:00 -> 11:25 = 25 mins",
-            "Interval = 55 mins + 25 mins + 1 hour",
-            "55 mins + 25 mins = 80 mins = 1 hour 20 mins",
-            "Interval = 2 hours 20 mins"
+            "Calculate the time interval between 10:35 and 14:25",
+            "10:35 -> 11:00 = 25 mins",
+            "11:00 -> 14:00 = 3 hours",
+            "14:00 -> 14:25 = 25 mins",
+            "Interval = 3 hours 50 mins"
         ]
     }
 
     increment = step_map[level]
-    # Fallback to level 3 examples if a level is missing from the map
-    level_examples = examples_map.get(level, examples_map[3]) 
 
-    start = datetime(
-        2000,
-        1,
-        1,
-        random.randint(0, 23),
-        random.choice(range(0, 60, increment))
-    )
+    level_examples = examples_map.get(level, examples_map[4])
 
-    # --- Update the end time logic here ---
+    # --------------------------------------------------
+    # Generate times
+    # --------------------------------------------------
+
     if level == 1:
-        # Calculate how many hours are left in the current day
-        hours_left = 23 - start.hour
-        if hours_left < 1:
-            # If start is 23:00, force end to be 23:00 + 0 hours (same time) 
-            # Or reset start hour to allow a gap: start = start.replace(hour=random.randint(0, 22))
-            hours_to_add = 0
-        else:
-            # Pick a random number of hours that fits perfectly within today
-            hours_to_add = random.randint(1, hours_left)
-            
-        end = start + timedelta(hours=hours_to_add)
-    else:
-        # Keep original logic for other levels
-        end = start + timedelta(
-            minutes=random.randint(1, 20) * increment
-        )
-    # --------------------------------------
 
+        # BOTH TIMES ON THE HOUR
+
+        start = datetime(
+            2000,
+            1,
+            1,
+            random.randint(0, 20),
+            0
+        )
+
+        end = start + timedelta(
+            hours=random.randint(1, 5)
+        )
+
+    elif level == 2:
+
+        # START ON HOUR
+        # END NOT ON HOUR
+
+        start = datetime(
+            2000,
+            1,
+            1,
+            random.randint(0, 20),
+            0
+        )
+
+        end = start + timedelta(
+            hours=random.randint(1, 5),
+            minutes=random.choice([5, 10, 15, 20, 25,
+                                   30, 35, 40, 45, 50, 55])
+        )
+
+    elif level == 3:
+
+        # START NOT ON HOUR
+        # END ON HOUR
+
+        start_minute = random.choice(
+            [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+        )
+
+        start = datetime(
+            2000,
+            1,
+            1,
+            random.randint(0, 18),
+            start_minute
+        )
+
+        mins_to_next_hour = 60 - start.minute
+
+        end = start + timedelta(
+            minutes=mins_to_next_hour,
+            hours=random.randint(1, 4)
+        )
+
+    else:
+
+        # BOTH TIMES NOT ON HOUR
+
+        start_minute = random.choice(
+            [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+        )
+
+        end_minute = random.choice(
+            [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+        )
+
+        start = datetime(
+            2000,
+            1,
+            1,
+            random.randint(0, 18),
+            start_minute
+        )
+
+        mins_to_next_hour = 60 - start.minute
+
+        end = start + timedelta(
+    minutes=mins_to_next_hour + end_minute,
+    hours=random.randint(1, 4)
+)
+
+    # --------------------------------------------------
+    # Calculate interval
+    # --------------------------------------------------
 
     diff = int((end - start).total_seconds() / 60)
 
     hours = diff // 60
     minutes = diff % 60
 
+    # --------------------------------------------------
+    # Scaffold steps
+    # --------------------------------------------------
+
+    if level == 1:
+
+        scaffold_steps = [
+            {
+                "prompt": (
+                    f"How many whole hours are there between "
+                    f"{start.strftime('%H:%M')} and "
+                    f"{end.strftime('%H:%M')}?"
+                ),
+                "answer": hours
+            }
+        ]
+
+    elif level == 2:
+
+        final_oclock = end.replace(minute=0)
+
+        scaffold_steps = [
+            {
+                "prompt": "How long to the final o'clock?",
+                "answer": int(
+                    (final_oclock - start).total_seconds() / 3600
+                )
+            },
+            {
+                "prompt": (
+                    "How many minutes from the final o'clock "
+                    "to the final time?"
+                ),
+                "answer": end.minute
+            }
+        ]
+
+    elif level == 3:
+
+        scaffold_steps = [
+            {
+                "prompt": "How many minutes to the next o'clock?",
+                "answer": 60 - start.minute
+            },
+            {
+                "prompt": "How many hours to the final time?",
+                "answer": (
+                    end.hour -
+                    (start.hour + 1)
+                )
+            }
+        ]
+
+    else:
+
+        final_oclock = end.replace(minute=0)
+
+        scaffold_steps = [
+            {
+                "prompt": "How many minutes to the next o'clock?",
+                "answer": 60 - start.minute
+            },
+            {
+                "prompt": "How many hours to the final o'clock?",
+                "answer": int(
+                    (
+                        final_oclock -
+                        (
+                            start.replace(
+                                minute=0
+                            ) + timedelta(hours=1)
+                        )
+                    ).total_seconds() / 3600
+                )
+            },
+            {
+                "prompt": "How many minutes to the final time?",
+                "answer": end.minute
+            }
+        ]
+
+    # --------------------------------------------------
+    # Return question
+    # --------------------------------------------------
+
     return Question(
+
         question_text=(
             f"What is the time interval between "
             f"{start.strftime('%H:%M')} and "
             f"{end.strftime('%H:%M')}?"
         ),
+
         correct_answer={
             "hours": hours,
             "minutes": minutes
         },
+
         topic="time_intervals",
+
         level=level,
-        scaffold_steps=[
-            "How many minutes from the start time to the next o'clock?",
-            "How many hours between this o'clock and the finish o'clock?",
-            "How many minutes are there between the finish o'clock and the finish time?"
-        ],
+
+        scaffold_steps=scaffold_steps,
+
         worked_solution=[
             f"Start time: {start.strftime('%H:%M')}",
             f"End time: {end.strftime('%H:%M')}",
             f"Total interval = {hours} hours and {minutes} minutes"
         ],
-        examples=level_examples,  # Uses the level-specific list here
+
+        examples=level_examples,
+
         videos=[
             {
                 "title": "Time Interval Tutorial",
-                "url": "https://glowscotland-my.sharepoint.com/:v:/g/personal/eslmcdermott1u_glow_sch_uk/IQARbgWg_fwMR5FGGBr4RFYCAdOg_6FVElyDZRpKPj5M3z4?e=ZHcnni"
+                "url": (
+                    "https://glowscotland-my.sharepoint.com/"
+                    ":v:/g/personal/"
+                    "eslmcdermott1u_glow_sch_uk/"
+                    "IQARbgWg_fwMR5FGGBr4RFYCAdOg_6FVElyDZRpKPj5M3z4"
+                    "?e=ZHcnni"
+                )
             }
         ]
     )
-
