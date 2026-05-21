@@ -59,7 +59,12 @@ def generate_unit_fraction_question(level):
         scaffold_steps=scaffold_steps,
         worked_solution=worked_solution,
         examples=examples_map[1],
-        videos=[]
+        videos=[
+            {
+                "title": "Fractions Tutorial",
+                "url": "https://glowscotland-my.sharepoint.com/:v:/g/personal/eslmcdermott1u_glow_sch_uk/IQBnauaKnvNHTrXrJ1JUfPC2AVW5Y8JoQ7vNeLx6VTN0yWE?e=XfdRNv&referrer=Outlook.Desktop&referrerScenario=email-linkwithembed"
+            }
+        ]
     )
 
 
@@ -107,7 +112,12 @@ def generate_non_unit_fraction_question(level):
         scaffold_steps=scaffold_steps,
         worked_solution=worked_solution,
         examples=examples_map[2],
-        videos=[]
+        videos=[
+            {
+                "title": "Fractions Tutorial",
+                "url": "https://glowscotland-my.sharepoint.com/:v:/g/personal/eslmcdermott1u_glow_sch_uk/IQBnauaKnvNHTrXrJ1JUfPC2AVW5Y8JoQ7vNeLx6VTN0yWE?e=XfdRNv&referrer=Outlook.Desktop&referrerScenario=email-linkwithembed"
+            }
+        ]
     )
 
 
