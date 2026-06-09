@@ -2,6 +2,7 @@
 from topics.time_intervals.generator import generate_time_interval_question
 from topics.percentages.generator import generate_percentage_question
 from topics.fractions.generator import generate_fraction_question
+from topics.container_packing.generator import generate_container_packing_question
 
 TOPIC_REGISTRY = {
     "Time Intervals": {
@@ -69,8 +70,34 @@ TOPIC_REGISTRY = {
                 "description": "Find non-unit fractions of amounts"
             }
         ]
+    },
+
+    "Container Packing": {
+        "generator": generate_container_packing_question,
+        "levels": [
+            {
+                "id": 1,
+                "label": "Level 1",
+                "description": "How many objects fit along a 1D length (mixed units)"
+            },
+            {
+                "id": 2,
+                "label": "Level 2",
+                "description": "Choose the best side to maximise objects along a line"
+            },
+            {
+                "id": 3,
+                "label": "Level 3",
+                "description": "How many square tiles fit on a 2D surface"
+            },
+            {
+                "id": 4,
+                "label": "Level 4",
+                "description": "How many cubes fit in a 3D volume"
+            }
+        ]
     }
-    
+
 }
 
 
