@@ -3,7 +3,6 @@ import streamlit as st
 from core.engine.session_manager import initialise_session
 from core.engine.question_factory import generate_question, TOPIC_REGISTRY
 from core.ui.question_ui import render_question
-from core.ui.examples_ui import render_examples
 from core.ui.scaffold_ui import render_scaffold
 from core.ui.solution_ui import render_solution
 
@@ -101,8 +100,6 @@ if mode == "Practice":
 
         else:
             st.write("---")
-            with st.expander("📝 Examples"):
-                render_examples(question)
             with st.expander("💡 Scaffold"):
                 render_scaffold(question)
 

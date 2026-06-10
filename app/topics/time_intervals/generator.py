@@ -155,85 +155,35 @@ def generate_time_interval_question(level):
     minutes = diff % 60
 
     # --------------------------------------------------
-    # Scaffold steps
+    # Scaffold steps — "count on" through o'clock stepping stones
     # --------------------------------------------------
 
-    if level == 1:
+    scaffold_steps = []
+    current = start
 
-        scaffold_steps = [
-            {
-                "prompt": (
-                    f"How many whole hours are there between "
-                    f"{start.strftime('%H:%M')} and "
-                    f"{end.strftime('%H:%M')}?"
-                ),
-                "answer": hours
-            }
-        ]
+    if current.minute != 0:
+        next_hour = current.replace(minute=0) + timedelta(hours=1)
+        mins = int((next_hour - current).total_seconds() / 60)
+        scaffold_steps.append({
+            "prompt": f"Count on from {current.strftime('%H:%M')} to {next_hour.strftime('%H:%M')} — how many minutes?",
+            "answer": mins
+        })
+        current = next_hour
 
-    elif level == 2:
+    end_oclock = end if end.minute == 0 else end.replace(minute=0)
+    while current < end_oclock:
+        next_hour = current + timedelta(hours=1)
+        scaffold_steps.append({
+            "prompt": f"Count on from {current.strftime('%H:%M')} to {next_hour.strftime('%H:%M')} — how many hours?",
+            "answer": 1
+        })
+        current = next_hour
 
-        final_oclock = end.replace(minute=0)
-
-        scaffold_steps = [
-            {
-                "prompt": "How long to the final o'clock?",
-                "answer": int(
-                    (final_oclock - start).total_seconds() / 3600
-                )
-            },
-            {
-                "prompt": (
-                    "How many minutes from the final o'clock "
-                    "to the final time?"
-                ),
-                "answer": end.minute
-            }
-        ]
-
-    elif level == 3:
-
-        scaffold_steps = [
-            {
-                "prompt": "How many minutes to the next o'clock?",
-                "answer": 60 - start.minute
-            },
-            {
-                "prompt": "How many hours to the final time?",
-                "answer": (
-                    end.hour -
-                    (start.hour + 1)
-                )
-            }
-        ]
-
-    else:
-
-        final_oclock = end.replace(minute=0)
-
-        scaffold_steps = [
-            {
-                "prompt": "How many minutes to the next o'clock?",
-                "answer": 60 - start.minute
-            },
-            {
-                "prompt": "How many hours to the final o'clock?",
-                "answer": int(
-                    (
-                        final_oclock -
-                        (
-                            start.replace(
-                                minute=0
-                            ) + timedelta(hours=1)
-                        )
-                    ).total_seconds() / 3600
-                )
-            },
-            {
-                "prompt": "How many minutes to the final time?",
-                "answer": end.minute
-            }
-        ]
+    if end.minute != 0:
+        scaffold_steps.append({
+            "prompt": f"Count on from {current.strftime('%H:%M')} to {end.strftime('%H:%M')} — how many minutes?",
+            "answer": end.minute
+        })
 
     # --------------------------------------------------
     # Return question
