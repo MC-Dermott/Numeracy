@@ -4,7 +4,6 @@ from core.engine.session_manager import initialise_session
 from core.engine.question_factory import generate_question, TOPIC_REGISTRY
 from core.ui.question_ui import render_question
 from core.ui.examples_ui import render_examples
-from core.ui.video_ui import render_videos
 from core.ui.scaffold_ui import render_scaffold
 from core.ui.solution_ui import render_solution
 
@@ -89,17 +88,9 @@ if mode == "Practice":
 
         if st.session_state.submitted:
             if isinstance(question.correct_answer, dict):
-                if top_answer["hours"] == 0 and top_answer["minutes"] == 0 and "scaffold_answer" in st.session_state:
-                    user_answer = st.session_state.scaffold_answer
-                else:
-                    user_answer = top_answer
-                correct = user_answer == question.correct_answer
+                correct = top_answer == question.correct_answer
             else:
-                if (top_answer == "" or top_answer == 0) and "scaffold_answer" in st.session_state:
-                    user_answer = st.session_state.scaffold_answer
-                else:
-                    user_answer = top_answer
-                correct = str(user_answer).strip() == str(question.correct_answer)
+                correct = str(top_answer).strip() == str(question.correct_answer)
 
             if correct:
                 st.success("✅ Correct")
@@ -110,20 +101,10 @@ if mode == "Practice":
 
         else:
             st.write("---")
-            with st.expander("💡 Need Help? View Examples, Videos & Hints"):
-                st.subheader("📝 Practice Examples")
+            with st.expander("📝 Examples"):
                 render_examples(question)
-                st.subheader("🎥 Video Tutorial")
-                render_videos(question)
-                st.subheader("Scaffold")
+            with st.expander("💡 Scaffold"):
                 render_scaffold(question)
-                st.write("---")
-                st.subheader("✏️ Enter Your Final Answer Here")
-                scaffold_ans = render_question(question, suffix="scaffold")
-                st.session_state.scaffold_answer = scaffold_ans
-                if st.button("Submit Answer", key="submit_scaffold"):
-                    st.session_state.submitted = True
-                    st.rerun()
 
 
 # ─── TEST MODE ───────────────────────────────────────────────────
