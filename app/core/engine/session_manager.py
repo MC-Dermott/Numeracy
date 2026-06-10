@@ -7,5 +7,9 @@ def initialise_session():
             "topic": None,
             "level": 1,
             "current_question": None,
-            "score": 0
+            "score": 0,
+            "mode": "Practice",
+            "test_question_num": 0,
+            "test_score": 0,
+            "test_complete": False,
         }
