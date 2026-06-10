@@ -160,28 +160,30 @@ def generate_time_interval_question(level):
 
     scaffold_steps = []
     current = start
+    end_oclock = end if end.minute == 0 else end.replace(minute=0)
 
+    # Minutes from start up to the next o'clock (if start is not on the hour)
     if current.minute != 0:
         next_hour = current.replace(minute=0) + timedelta(hours=1)
         mins = int((next_hour - current).total_seconds() / 60)
         scaffold_steps.append({
-            "prompt": f"Count on from {current.strftime('%H:%M')} to {next_hour.strftime('%H:%M')} — how many minutes?",
+            "prompt": f"Count on from {current.strftime('%H:%M')} to {next_hour.strftime('%H:%M')}",
             "answer": mins
         })
         current = next_hour
 
-    end_oclock = end if end.minute == 0 else end.replace(minute=0)
-    while current < end_oclock:
-        next_hour = current + timedelta(hours=1)
+    # Count on through the full o'clock range in one step
+    if current < end_oclock:
+        whole_hours = int((end_oclock - current).total_seconds() / 3600)
         scaffold_steps.append({
-            "prompt": f"Count on from {current.strftime('%H:%M')} to {next_hour.strftime('%H:%M')} — how many hours?",
-            "answer": 1
+            "prompt": f"Count on from {current.strftime('%H:%M')} to {end_oclock.strftime('%H:%M')}",
+            "answer": whole_hours
         })
-        current = next_hour
 
+    # Minutes from final o'clock to end (if end is not on the hour)
     if end.minute != 0:
         scaffold_steps.append({
-            "prompt": f"Count on from {current.strftime('%H:%M')} to {end.strftime('%H:%M')} — how many minutes?",
+            "prompt": f"Count on from {end_oclock.strftime('%H:%M')} to {end.strftime('%H:%M')}",
             "answer": end.minute
         })
 
