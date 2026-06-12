@@ -5,16 +5,74 @@ from core.engine.question_factory import generate_question, TOPIC_REGISTRY
 from core.ui.question_ui import render_question
 from core.ui.scaffold_ui import render_scaffold
 from core.ui.solution_ui import render_solution
+from core.ui.auth_ui import render_auth
+from core.db.tracker import save_practice_attempt, save_test_result
 
 initialise_session()
 
 st.set_page_config(page_title="Maths Learning Platform")
-st.title("📘 Maths Learning Platform")
-
-quiz = st.session_state.quiz
 
 if "submitted" not in st.session_state:
     st.session_state.submitted = False
+
+
+def _check_answer(user_answer, question) -> bool:
+    if isinstance(question.correct_answer, dict):
+        return user_answer == question.correct_answer
+    accepted = question.metadata.get("accepted_answers") if question.metadata else None
+    if accepted:
+        normalized = (
+            str(user_answer).strip().lower()
+            .replace("²", "2").replace("^2", "2").replace(" ", "")
+        )
+        return normalized in accepted
+    return str(user_answer).strip() == str(question.correct_answer)
+
+
+def _do_logout():
+    for key in ["user", "submitted", "last_tracked_qid"]:
+        st.session_state.pop(key, None)
+    quiz = st.session_state.get("quiz", {})
+    quiz["current_question"] = None
+    quiz["mode"] = None
+    quiz["test_question_num"] = 0
+    quiz["test_score"] = 0
+    quiz["test_complete"] = False
+
+
+def _render_auth_button():
+    user = st.session_state.get("user")
+    if user:
+        st.caption(f"**{user['username']}**")
+        if st.button("Log out", key="logout_corner"):
+            _do_logout()
+            st.rerun()
+    else:
+        if st.button("Log in / Sign up", key="login_corner"):
+            st.session_state.show_auth = True
+            st.rerun()
+
+
+# --- Auth page ---
+if st.session_state.get("show_auth"):
+    if st.button("← Back"):
+        st.session_state.pop("show_auth", None)
+        st.rerun()
+    render_auth()
+    st.stop()
+
+user = st.session_state.get("user")
+user_id = user["id"] if user else None
+
+# --- Title row ---
+col_title, col_corner = st.columns([5, 1])
+with col_title:
+    st.title("Maths Learning Platform")
+with col_corner:
+    st.write("")
+    _render_auth_button()
+
+quiz = st.session_state.quiz
 
 # ─── MODE SELECTION ──────────────────────────────────────────────
 mode = st.radio("Mode", ["Practice", "Test"], horizontal=True, label_visibility="collapsed")
@@ -75,6 +133,7 @@ if mode == "Practice":
         quiz["level"] = level
         quiz["current_question"] = generate_question(topic, level)
         st.session_state.submitted = False
+        st.session_state.pop("last_tracked_qid", None)
         st.rerun()
 
     question = quiz.get("current_question")
@@ -86,10 +145,11 @@ if mode == "Practice":
             st.session_state.submitted = True
 
         if st.session_state.submitted:
-            if isinstance(question.correct_answer, dict):
-                correct = top_answer == question.correct_answer
-            else:
-                correct = str(top_answer).strip() == str(question.correct_answer)
+            correct = _check_answer(top_answer, question)
+
+            if user_id and st.session_state.get("last_tracked_qid") != question.qid:
+                save_practice_attempt(user_id, quiz["topic"], quiz["level"], correct)
+                st.session_state.last_tracked_qid = question.qid
 
             if correct:
                 st.success("✅ Correct")
@@ -161,10 +221,7 @@ else:
 
         if not st.session_state.submitted:
             if st.button("Submit Answer", key="submit_test"):
-                if isinstance(question.correct_answer, dict):
-                    correct = top_answer == question.correct_answer
-                else:
-                    correct = str(top_answer).strip() == str(question.correct_answer)
+                correct = _check_answer(top_answer, question)
 
                 st.session_state.test_correct = correct
                 if correct:
@@ -191,4 +248,6 @@ else:
             else:
                 if st.button("See Results", type="primary"):
                     quiz["test_complete"] = True
+                    if user_id:
+                        save_test_result(user_id, quiz["topic"], quiz["level"], quiz["test_score"], TEST_LENGTH)
                     st.rerun()

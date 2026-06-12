@@ -1,10 +1,20 @@
 
+from topics.area.generator import generate_area_question
 from topics.time_intervals.generator import generate_time_interval_question
 from topics.percentages.generator import generate_percentage_question
 from topics.fractions.generator import generate_fraction_question
 from topics.container_packing.generator import generate_container_packing_question
 
 TOPIC_REGISTRY = {
+    "Area": {
+        "generator": generate_area_question,
+        "levels": [
+            {"id": 1, "label": "Level 1", "description": "Squares & rectangles (same unit)"},
+            {"id": 2, "label": "Level 2", "description": "Rectangles with mixed units"},
+            {"id": 3, "label": "Level 3", "description": "Triangles (same unit)"},
+            {"id": 4, "label": "Level 4", "description": "Triangles with mixed units"},
+        ],
+    },
     "Time Intervals": {
         "generator": generate_time_interval_question,
         "levels": [
