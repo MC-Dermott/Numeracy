@@ -7,6 +7,7 @@ from core.ui.scaffold_ui import render_scaffold
 from core.ui.solution_ui import render_solution
 from core.ui.auth_ui import render_auth
 from core.ui.dashboard_ui import render_dashboard
+from core.ui.student_dashboard_ui import render_student_dashboard
 from core.db.tracker import save_practice_attempt, save_test_result
 
 initialise_session()
@@ -31,7 +32,7 @@ def _check_answer(user_answer, question) -> bool:
 
 
 def _do_logout():
-    for key in ["user", "submitted", "last_tracked_qid", "show_dashboard"]:
+    for key in ["user", "submitted", "last_tracked_qid", "show_dashboard", "show_student_dashboard"]:
         st.session_state.pop(key, None)
     quiz = st.session_state.get("quiz", {})
     quiz["current_question"] = None
@@ -71,6 +72,19 @@ if not user:
 
 user_id = user["id"] if user else None
 
+# --- Student progress dashboard ---
+if st.session_state.get("show_student_dashboard"):
+    st.title("Maths Learning Platform")
+    col_back, col_corner = st.columns([5, 1])
+    with col_back:
+        if st.button("← Back to practice"):
+            st.session_state.pop("show_student_dashboard", None)
+            st.rerun()
+    with col_corner:
+        _render_auth_button()
+    render_student_dashboard(user)
+    st.stop()
+
 # --- Teacher dashboard ---
 if st.session_state.get("show_dashboard"):
     st.title("Maths Learning Platform")
@@ -97,6 +111,11 @@ if user and user.get("role") == "teacher":
         st.session_state.show_dashboard = True
         st.rerun()
     st.write("")
+
+if st.button("📈 My Progress", use_container_width=True):
+    st.session_state.show_student_dashboard = True
+    st.rerun()
+st.write("")
 
 quiz = st.session_state.quiz
 
