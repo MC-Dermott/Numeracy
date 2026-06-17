@@ -62,6 +62,12 @@ if st.session_state.get("show_auth"):
     st.stop()
 
 user = st.session_state.get("user")
+
+# --- Login gate: block all access until authenticated ---
+if not user:
+    render_auth()
+    st.stop()
+
 user_id = user["id"] if user else None
 
 # --- Title row ---
