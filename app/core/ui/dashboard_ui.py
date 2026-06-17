@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.graph_objects as go
 from core.db.client import get_supabase
 from core.auth.auth import reset_password
 
@@ -28,6 +27,7 @@ def _fetch_all():
 
 
 def _heatmap(topics, levels, summary):
+    import plotly.graph_objects as go
     level_labels = [f"Level {l}" for l in levels]
     z, annotations = [], []
     for r, topic in enumerate(topics):
