@@ -1,4 +1,7 @@
+import time
+
 import streamlit as st
+import streamlit.components.v1 as components
 
 from core.engine.session_manager import initialise_session
 from core.engine.question_factory import generate_question, TOPIC_REGISTRY
@@ -221,7 +224,41 @@ else:
         st.markdown(f"### Your Score: {score} / {TEST_LENGTH}")
 
         if score == TEST_LENGTH:
-            st.success("Perfect score! Outstanding work!")
+            st.success("Perfect score! 🎉 You've unlocked a game — enjoy!")
+            remaining = max(0, 60 - int(time.time() - quiz.get("game_unlock_time", time.time())))
+            if remaining > 0:
+                components.html(f"""
+                    <div id="game-wrap">
+                        <iframe src="https://scratch.mit.edu/projects/971774487/embed"
+                            width="490" height="410" frameborder="0"
+                            scrolling="no" allowfullscreen></iframe>
+                        <p id="timer-text" style="font-family:sans-serif;text-align:center;margin:6px 0 0;">
+                            ⏱ Game available for <span id="secs">{remaining}</span> seconds
+                        </p>
+                    </div>
+                    <div id="game-over" style="display:none;text-align:center;padding:24px;">
+                        <p style="font-family:sans-serif;color:#666;font-size:1.1em;">
+                            Time's up! Start a new test to keep practising.
+                        </p>
+                    </div>
+                    <script>
+                    var s = {remaining};
+                    var el = document.getElementById('secs');
+                    var wrap = document.getElementById('game-wrap');
+                    var over = document.getElementById('game-over');
+                    var iv = setInterval(function() {{
+                        s--;
+                        el.textContent = s;
+                        if (s <= 0) {{
+                            clearInterval(iv);
+                            wrap.style.display = 'none';
+                            over.style.display = 'block';
+                        }}
+                    }}, 1000);
+                    </script>
+                """, height=460)
+            else:
+                st.info("Time's up! Start a new test to keep practising.")
         elif score >= 4:
             st.success("Excellent work!")
         elif score >= 3:
@@ -234,6 +271,7 @@ else:
             quiz["test_score"] = 0
             quiz["test_complete"] = False
             quiz["current_question"] = None
+            quiz.pop("game_unlock_time", None)
             st.session_state.submitted = False
             st.rerun()
 
@@ -295,4 +333,6 @@ else:
                     quiz["test_complete"] = True
                     if user_id:
                         save_test_result(user_id, quiz["topic"], quiz["level"], quiz["test_score"], TEST_LENGTH)
+                    if quiz["test_score"] == TEST_LENGTH:
+                        quiz["game_unlock_time"] = time.time()
                     st.rerun()
