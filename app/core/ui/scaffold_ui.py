@@ -18,6 +18,8 @@ def render_scaffold(question, suffix=""):
     for i, step in enumerate(question.scaffold_steps):
 
         if "answer" not in step:
+            if "diagram_html" in step:
+                st.markdown(step["diagram_html"], unsafe_allow_html=True)
             st.markdown(f"**{step['prompt']}**")
             st.write("")
             continue

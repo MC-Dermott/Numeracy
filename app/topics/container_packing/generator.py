@@ -281,6 +281,49 @@ def generate_level3_question(level):
     )
 
 
+def _orientation_diagram(W, H, obj_a, obj_b):
+    """SVG diagram showing obj_a×obj_b objects packed into a W×H surface."""
+    cols = W // obj_a
+    rows = H // obj_b
+
+    MAX_W, MAX_H = 200, 140
+    scale = min(MAX_W / W, MAX_H / H)
+
+    dW = round(W * scale, 1)
+    dH = round(H * scale, 1)
+    tW = round(obj_a * scale, 1)
+    tH = round(obj_b * scale, 1)
+
+    PL, PT, PB, PR = 38, 22, 18, 8
+    svg_w = int(dW + PL + PR)
+    svg_h = int(dH + PT + PB)
+
+    p = []
+    p.append(f'<svg width="{svg_w}" height="{svg_h}" xmlns="http://www.w3.org/2000/svg">')
+    p.append(f'<rect x="{PL}" y="{PT}" width="{dW}" height="{dH}" fill="#eaf4fb" stroke="#2c3e50" stroke-width="2"/>')
+
+    for r in range(rows):
+        for c in range(cols):
+            x = round(PL + c * tW, 1)
+            y = round(PT + r * tH, 1)
+            p.append(f'<rect x="{x}" y="{y}" width="{tW}" height="{tH}" fill="#3498db" fill-opacity="0.25" stroke="#2980b9" stroke-width="1"/>')
+
+    if tW >= 30 and tH >= 15:
+        tx = round(PL + tW / 2)
+        ty = round(PT + tH / 2)
+        p.append(f'<text x="{tx}" y="{ty}" text-anchor="middle" dominant-baseline="middle" font-size="9" font-family="sans-serif" fill="#1a5276">{obj_a}×{obj_b}cm</text>')
+
+    p.append(f'<text x="{round(PL + dW / 2)}" y="{PT - 7}" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#2c3e50">{W} cm</text>')
+
+    cy = round(PT + dH / 2)
+    p.append(f'<text x="13" y="{cy}" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#2c3e50" transform="rotate(-90 13 {cy})">{H} cm</text>')
+
+    p.append(f'<text x="{round(PL + dW)}" y="{round(PT + dH + 14)}" text-anchor="end" font-size="10" font-family="sans-serif" fill="#555">{cols} × {rows} = {cols * rows}</text>')
+
+    p.append('</svg>')
+    return '<div style="margin-bottom:6px">' + ''.join(p) + '</div>'
+
+
 # ─────────────────────────────────────────
 # LEVEL 4: Best orientation in an area
 # ─────────────────────────────────────────
@@ -320,10 +363,16 @@ def generate_level4_question(level):
     surface, obj_sg, obj_pl = random.choice(_L4_CONTEXTS)
 
     scaffold_steps = [
-        {"prompt": f"Orientation 1: {a} cm side of the {obj_sg} along the {W} cm side of the {surface}, {b} cm side of the {obj_sg} along the {H} cm side of the {surface}"},
+        {
+            "prompt": f"Orientation 1: {a} cm side of the {obj_sg} along the {W} cm side of the {surface}, {b} cm side of the {obj_sg} along the {H} cm side of the {surface}",
+            "diagram_html": _orientation_diagram(W, H, a, b),
+        },
         {"prompt": f"How many {obj_pl} fit along the {W} cm if we line it up with the {a} cm side?", "answer": W // a},
         {"prompt": f"How many {obj_pl} fit along the {H} cm if we line it up with the {b} cm side?", "answer": H // b},
-        {"prompt": f"Orientation 2: {b} cm side of the {obj_sg} along the {W} cm side of the {surface}, {a} cm side of the {obj_sg} along the {H} cm side of the {surface}"},
+        {
+            "prompt": f"Orientation 2: {b} cm side of the {obj_sg} along the {W} cm side of the {surface}, {a} cm side of the {obj_sg} along the {H} cm side of the {surface}",
+            "diagram_html": _orientation_diagram(W, H, b, a),
+        },
         {"prompt": f"How many {obj_pl} fit along the {W} cm if we line it up with the {b} cm side?", "answer": W // b},
         {"prompt": f"How many {obj_pl} fit along the {H} cm if we line it up with the {a} cm side?", "answer": H // a},
     ]
