@@ -143,7 +143,17 @@ test_in_progress = (
 )
 
 if test_in_progress:
-    st.info(f"Test in progress: **{quiz['topic']}** | **Level {quiz['level']}**")
+    col_info, col_back = st.columns([5, 1])
+    with col_info:
+        st.info(f"Test in progress: **{quiz['topic']}** | **Level {quiz['level']}**")
+    with col_back:
+        if st.button("← Back", use_container_width=True):
+            quiz["test_question_num"] = 0
+            quiz["test_complete"] = False
+            quiz["current_question"] = None
+            quiz.pop("game_unlock_time", None)
+            st.session_state.submitted = False
+            st.rerun()
 else:
     topic_list = list(TOPIC_REGISTRY.keys())
     last_topic = quiz.get("topic")
