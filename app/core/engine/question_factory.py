@@ -88,7 +88,7 @@ TOPIC_REGISTRY = {
             {
                 "id": 1,
                 "label": "Level 1",
-                "description": "How many objects fit along a 1D length (mixed units)"
+                "description": "How many objects fit along a line (mixed units)"
             },
             {
                 "id": 2,
@@ -98,11 +98,16 @@ TOPIC_REGISTRY = {
             {
                 "id": 3,
                 "label": "Level 3",
-                "description": "How many square tiles fit on a 2D surface"
+                "description": "How many square tiles fit in an area"
             },
             {
                 "id": 4,
                 "label": "Level 4",
+                "description": "Choose the best orientation to maximise objects in an area"
+            },
+            {
+                "id": 5,
+                "label": "Level 5",
                 "description": "How many cubes fit in a 3D volume"
             }
         ]

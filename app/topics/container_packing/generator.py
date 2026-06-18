@@ -4,28 +4,35 @@ from core.models.question_model import Question
 
 examples_map = {
     1: [
-        "Level 1 Example (1D packing with unit conversion):",
+        "Level 1 Example (packing along a line with unit conversion):",
         "A shelf is 2 m long. Each book is 25 cm wide.",
         "Convert: 2 m = 200 cm",
         "200 ÷ 25 = 8",
         "Answer = 8 books"
     ],
     2: [
-        "Level 2 Example (Choose best orientation):",
+        "Level 2 Example (choose best orientation along a line):",
         "A box is 15 cm × 25 cm. Shelf is 300 cm long.",
         "Using 15 cm side: 300 ÷ 15 = 20 boxes",
         "Using 25 cm side: 300 ÷ 25 = 12 boxes",
         "Maximum = 20 boxes"
     ],
     3: [
-        "Level 3 Example (Tiles on a 2D surface):",
+        "Level 3 Example (square tiles in an area):",
         "Tiles are 20 cm × 20 cm. Floor is 160 cm × 120 cm.",
         "160 ÷ 20 = 8 columns",
         "120 ÷ 20 = 6 rows",
         "8 × 6 = 48 tiles"
     ],
     4: [
-        "Level 4 Example (Cubes in a 3D volume):",
+        "Level 4 Example (best orientation in an area):",
+        "A tile measures 20 cm × 30 cm. Floor is 120 cm × 90 cm.",
+        "Orientation 1 (20cm along 120cm, 30cm along 90cm): 120÷20=6, 90÷30=3 → 6×3=18 tiles",
+        "Orientation 2 (30cm along 120cm, 20cm along 90cm): 120÷30=4, 90÷20=4 → 4×4=16 tiles",
+        "Maximum = 18 tiles"
+    ],
+    5: [
+        "Level 5 Example (cubes in a 3D volume):",
         "Cube side = 10 cm. Box = 60 cm × 40 cm × 30 cm.",
         "60 ÷ 10 = 6,  40 ÷ 10 = 4,  30 ÷ 10 = 3",
         "6 × 4 × 3 = 72 cubes"
@@ -34,7 +41,7 @@ examples_map = {
 
 
 # ─────────────────────────────────────────
-# LEVEL 1: 1D packing with mixed units
+# LEVEL 1: Packing along a line (mixed units)
 # ─────────────────────────────────────────
 
 def _level1_same_unit():
@@ -153,7 +160,7 @@ def generate_level1_question(level):
 
 
 # ─────────────────────────────────────────
-# LEVEL 2: Best orientation along 1D line
+# LEVEL 2: Best orientation along a line
 # ─────────────────────────────────────────
 
 _L2_SCENARIOS = [
@@ -275,10 +282,77 @@ def generate_level3_question(level):
 
 
 # ─────────────────────────────────────────
-# LEVEL 4: Cubes packed into a 3D volume
+# LEVEL 4: Best orientation in an area
 # ─────────────────────────────────────────
 
+# (W, H, small_dim, large_dim) — both orientations give integer or floor divisions
+# and the two orientations produce different totals
 _L4_SCENARIOS = [
+    (120, 90,  20, 30),
+    (100, 80,  20, 25),
+    (150, 120, 25, 30),
+    (200, 150, 30, 40),
+    (180, 120, 30, 40),
+    (160, 120, 20, 30),
+    (200, 120, 30, 40),
+    (140, 80,  20, 35),
+    (180, 140, 20, 30),
+    (200, 180, 30, 40),
+    (120, 100, 20, 25),
+    (240, 180, 30, 40),
+]
+
+_L4_CONTEXTS = [
+    ("floor",   "rectangular tile",  "rectangular tiles"),
+    ("surface", "rectangular mat",   "rectangular mats"),
+    ("table",   "rectangular card",  "rectangular cards"),
+    ("tray",    "rectangular block", "rectangular blocks"),
+    ("wall",    "rectangular tile",  "rectangular tiles"),
+]
+
+
+def generate_level4_question(level):
+    W, H, a, b = random.choice(_L4_SCENARIOS)
+    o1 = (W // a) * (H // b)
+    o2 = (W // b) * (H // a)
+    answer = max(o1, o2)
+
+    surface, obj_sg, obj_pl = random.choice(_L4_CONTEXTS)
+
+    scaffold_steps = [
+        {"prompt": f"Orientation 1 — {a} cm side along {W} cm, {b} cm side along {H} cm: how many columns?", "answer": W // a},
+        {"prompt": f"Orientation 1 — how many rows?", "answer": H // b},
+        {"prompt": f"Orientation 2 — {b} cm side along {W} cm, {a} cm side along {H} cm: how many columns?", "answer": W // b},
+        {"prompt": f"Orientation 2 — how many rows?", "answer": H // a},
+    ]
+    worked_solution = [
+        f"Orientation 1 ({a} cm × {b} cm): {W}÷{a}={W//a} columns, {H}÷{b}={H//b} rows → {W//a}×{H//b}={o1} {obj_pl}",
+        f"Orientation 2 ({b} cm × {a} cm): {W}÷{b}={W//b} columns, {H}÷{a}={H//a} rows → {W//b}×{H//a}={o2} {obj_pl}",
+        f"Maximum = {answer} {obj_pl}",
+    ]
+    question_text = (
+        f"A {obj_sg} measures {a} cm × {b} cm. "
+        f"A {surface} measures {W} cm × {H} cm. "
+        f"What is the maximum number of {obj_pl} that can fit in the area?"
+    )
+
+    return Question(
+        question_text=question_text,
+        correct_answer=str(answer),
+        topic="container_packing",
+        level=level,
+        scaffold_steps=scaffold_steps,
+        worked_solution=worked_solution,
+        examples=examples_map[4],
+        videos=[]
+    )
+
+
+# ─────────────────────────────────────────
+# LEVEL 5: Cubes packed into a 3D volume
+# ─────────────────────────────────────────
+
+_L5_SCENARIOS = [
     (60,  40, 30, 10),
     (80,  60, 40, 20),
     (100, 60, 40, 20),
@@ -293,7 +367,7 @@ _L4_SCENARIOS = [
     (60,  60, 40, 20),
 ]
 
-_L4_CONTEXTS = [
+_L5_CONTEXTS = [
     ("storage box", "cubes"),
     ("crate",       "cubes"),
     ("container",   "cube-shaped blocks"),
@@ -302,14 +376,14 @@ _L4_CONTEXTS = [
 ]
 
 
-def generate_level4_question(level):
-    L, W, H, cube = random.choice(_L4_SCENARIOS)
+def generate_level5_question(level):
+    L, W, H, cube = random.choice(_L5_SCENARIOS)
     n_L = L // cube
     n_W = W // cube
     n_H = H // cube
     answer = n_L * n_W * n_H
 
-    container, obj = random.choice(_L4_CONTEXTS)
+    container, obj = random.choice(_L5_CONTEXTS)
 
     scaffold_steps = [
         {"prompt": f"How many {obj} fit along the {L} cm length?", "answer": n_L},
@@ -334,7 +408,7 @@ def generate_level4_question(level):
         level=level,
         scaffold_steps=scaffold_steps,
         worked_solution=worked_solution,
-        examples=examples_map[4],
+        examples=examples_map[5],
         videos=[]
     )
 
@@ -352,4 +426,6 @@ def generate_container_packing_question(level):
         return generate_level3_question(level)
     if level == 4:
         return generate_level4_question(level)
+    if level == 5:
+        return generate_level5_question(level)
     return generate_level1_question(level)
