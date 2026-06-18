@@ -282,10 +282,7 @@ def generate_level3_question(level):
 
 
 def _orientation_diagram(W, H, obj_a, obj_b):
-    """SVG diagram showing obj_a×obj_b objects packed into a W×H surface."""
-    cols = W // obj_a
-    rows = H // obj_b
-
+    """SVG showing one object in the top-left corner of the surface, sides labelled."""
     MAX_W, MAX_H = 200, 140
     scale = min(MAX_W / W, MAX_H / H)
 
@@ -294,31 +291,33 @@ def _orientation_diagram(W, H, obj_a, obj_b):
     tW = round(obj_a * scale, 1)
     tH = round(obj_b * scale, 1)
 
-    PL, PT, PB, PR = 38, 22, 18, 8
+    PL, PT, PB, PR = 38, 22, 30, 42
     svg_w = int(dW + PL + PR)
     svg_h = int(dH + PT + PB)
 
     p = []
     p.append(f'<svg width="{svg_w}" height="{svg_h}" xmlns="http://www.w3.org/2000/svg">')
+
+    # Surface area rectangle
     p.append(f'<rect x="{PL}" y="{PT}" width="{dW}" height="{dH}" fill="#eaf4fb" stroke="#2c3e50" stroke-width="2"/>')
 
-    for r in range(rows):
-        for c in range(cols):
-            x = round(PL + c * tW, 1)
-            y = round(PT + r * tH, 1)
-            p.append(f'<rect x="{x}" y="{y}" width="{tW}" height="{tH}" fill="#3498db" fill-opacity="0.25" stroke="#2980b9" stroke-width="1"/>')
+    # Single object in top-left corner
+    p.append(f'<rect x="{PL}" y="{PT}" width="{tW}" height="{tH}" fill="#3498db" fill-opacity="0.35" stroke="#2980b9" stroke-width="1.5"/>')
 
-    if tW >= 30 and tH >= 15:
-        tx = round(PL + tW / 2)
-        ty = round(PT + tH / 2)
-        p.append(f'<text x="{tx}" y="{ty}" text-anchor="middle" dominant-baseline="middle" font-size="9" font-family="sans-serif" fill="#1a5276">{obj_a}×{obj_b}cm</text>')
+    # Object width label (above object, in blue)
+    p.append(f'<text x="{round(PL + tW / 2)}" y="{PT - 7}" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#2980b9">{obj_a} cm</text>')
 
-    p.append(f'<text x="{round(PL + dW / 2)}" y="{PT - 7}" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#2c3e50">{W} cm</text>')
+    # Object height label (left side, rotated, in blue)
+    coy = round(PT + tH / 2)
+    p.append(f'<text x="13" y="{coy}" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#2980b9" transform="rotate(-90 13 {coy})">{obj_b} cm</text>')
 
-    cy = round(PT + dH / 2)
-    p.append(f'<text x="13" y="{cy}" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#2c3e50" transform="rotate(-90 13 {cy})">{H} cm</text>')
+    # Surface width label (below rectangle, in dark)
+    p.append(f'<text x="{round(PL + dW / 2)}" y="{round(PT + dH + 18)}" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#2c3e50">{W} cm</text>')
 
-    p.append(f'<text x="{round(PL + dW)}" y="{round(PT + dH + 14)}" text-anchor="end" font-size="10" font-family="sans-serif" fill="#555">{cols} × {rows} = {cols * rows}</text>')
+    # Surface height label (right side, rotated, in dark)
+    csy = round(PT + dH / 2)
+    rx = int(dW + PL + 20)
+    p.append(f'<text x="{rx}" y="{csy}" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#2c3e50" transform="rotate(90 {rx} {csy})">{H} cm</text>')
 
     p.append('</svg>')
     return '<div style="margin-bottom:6px">' + ''.join(p) + '</div>'
