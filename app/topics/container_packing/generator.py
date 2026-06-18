@@ -320,10 +320,12 @@ def generate_level4_question(level):
     surface, obj_sg, obj_pl = random.choice(_L4_CONTEXTS)
 
     scaffold_steps = [
-        {"prompt": f"Orientation 1 — {a} cm side along {W} cm, {b} cm side along {H} cm: how many columns?", "answer": W // a},
-        {"prompt": f"Orientation 1 — how many rows?", "answer": H // b},
-        {"prompt": f"Orientation 2 — {b} cm side along {W} cm, {a} cm side along {H} cm: how many columns?", "answer": W // b},
-        {"prompt": f"Orientation 2 — how many rows?", "answer": H // a},
+        {"prompt": f"Orientation 1: {a} cm side of the {obj_sg} along the {W} cm side of the {surface}, {b} cm side of the {obj_sg} along the {H} cm side of the {surface}"},
+        {"prompt": f"How many {obj_pl} fit along the {W} cm if we line it up with the {a} cm side?", "answer": W // a},
+        {"prompt": f"How many {obj_pl} fit along the {H} cm if we line it up with the {b} cm side?", "answer": H // b},
+        {"prompt": f"Orientation 2: {b} cm side of the {obj_sg} along the {W} cm side of the {surface}, {a} cm side of the {obj_sg} along the {H} cm side of the {surface}"},
+        {"prompt": f"How many {obj_pl} fit along the {W} cm if we line it up with the {b} cm side?", "answer": W // b},
+        {"prompt": f"How many {obj_pl} fit along the {H} cm if we line it up with the {a} cm side?", "answer": H // a},
     ]
     worked_solution = [
         f"Orientation 1 ({a} cm × {b} cm): {W}÷{a}={W//a} columns, {H}÷{b}={H//b} rows → {W//a}×{H//b}={o1} {obj_pl}",

@@ -17,6 +17,11 @@ def render_scaffold(question, suffix=""):
 
     for i, step in enumerate(question.scaffold_steps):
 
+        if "answer" not in step:
+            st.markdown(f"**{step['prompt']}**")
+            st.write("")
+            continue
+
         key = f"scaffold_{suffix}_{i}"
 
         st.write(step["prompt"])
