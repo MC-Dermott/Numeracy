@@ -145,7 +145,10 @@ test_in_progress = (
 if test_in_progress:
     st.info(f"Test in progress: **{quiz['topic']}** | **Level {quiz['level']}**")
 else:
-    topic = st.selectbox("Choose Topic", list(TOPIC_REGISTRY.keys()))
+    topic_list = list(TOPIC_REGISTRY.keys())
+    last_topic = quiz.get("topic")
+    default_idx = topic_list.index(last_topic) if last_topic in topic_list else 0
+    topic = st.selectbox("Choose Topic", topic_list, index=default_idx)
     selected_topic = TOPIC_REGISTRY[topic]
     levels = selected_topic["levels"]
 
